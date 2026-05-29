@@ -1,17 +1,41 @@
-version: "3.8"
-
 services:
-  postgres:
-    image: postgres:15-alpine
+  # --- PostgreSQL Database Service ---
+  postgres_db:
+    image: postgres:16-alpine
     container_name: task_tracker_db
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_USER: postgresuser
+      POSTGRES_PASSWORD: postgres123
       POSTGRES_DB: task_tracker
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - task_network
 
+  # --- Go API Service ---
+  api:
+    build: .
+    container_name: task_tracker_api
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres_db
+      - DB_PORT=5432
+      - DB_USER=posrtgresuser
+      - DB_PASSWORD=postgres123
+      - DB_NAME=task_tracker
+    depends_on:
+      - postgres_db
+    networks:
+      - task_network
+
+# Persistent storage for PostgreSQL so data doesn't disappear when containers stop
 volumes:
-  pgdata:
+  postgres_data:
+
+networks:
+  task_network:
+    driver: bridge

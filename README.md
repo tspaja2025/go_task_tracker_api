@@ -18,7 +18,7 @@ Check out the project details [roadmap.sh](https://roadmap.sh/projects/todo-list
 8. pagination, filtering and sorting for the task list
 9. Unit tests for the API
 10. Rate limiting and throttling for the API
-11. Refresh token mechanism for the authentication
+11. Refresh token mechanism for the authentication - Done
 
 ## Features
 

@@ -27,6 +27,7 @@ func main() {
 	// Routing
 	http.HandleFunc("/register", authHandler.Register)
 	http.HandleFunc("/login", authHandler.Login)
+	http.HandleFunc("/refresh", authHandler.Refresh)
 
 	// Test route that quaries the database version
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

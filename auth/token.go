@@ -48,3 +48,24 @@ func HashToken(token string) string {
 	hasher.Write([]byte(token))
 	return hex.EncodeToString(hasher.Sum(nil))
 }
+
+// Validate a token string and return if valid
+func ParseToken(tokenStr string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
+		// Ensure the signing method is HS256
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return jwtSecret, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, jwt.ErrTokenRequiredClaimMissing
+}

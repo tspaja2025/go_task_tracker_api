@@ -77,3 +77,17 @@ func (r *Repository) SaveRefreshToken(ctx context.Context, userID int, tokenHash
 	_, err := r.db.Exec(ctx, query, userID, tokenHash, expiresAt)
 	return err
 }
+
+// Check if a token hash is valid
+func (r *Repository) VerifyAndConsumeRefreshToken(ctx context.Context, tokenHash string) (int, error) {
+	query := `DELETE FROM refresh_tokens WHERE token_hash = $1 AND expires_at > CURRENT_TIMESTAMP RETURNING user_id;`
+
+	var userID int
+	err := r.db.QueryRow(ctx, query, tokenHash).Scan(&userID)
+	if err != nil {
+		// Will return pgx.ErrNoRows if token is missing, expired or used
+		return 0, err
+	}
+
+	return userID, nil
+}

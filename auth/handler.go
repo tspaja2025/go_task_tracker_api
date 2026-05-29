@@ -121,3 +121,66 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		RefreshToken: refreshToken,
 	})
 }
+
+func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req models.RefreshRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid JSON format"})
+		return
+	}
+
+	if err := h.validate.Struct(req); err != nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Refresh token is required"})
+		return
+	}
+
+	// Parse and validate token string
+	_, err := ParseToken(req.RefreshToken)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid or expired refresh token"})
+		return
+	}
+
+	// Hash the token to look it up in the database
+	tokenHash := HashToken(req.RefreshToken)
+
+	// Verify existence, expiration and delete token from database
+	userID, err := h.repo.VerifyAndConsumeRefreshToken(r.Context(), tokenHash)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Refresh token is invalid, expired, or used"})
+		return
+	}
+
+	// Generate new access + refresh token
+	newAccess, newRefresh, refreshExpiration, err := GenerateTokens(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to generate tokens"})
+		return
+	}
+
+	// Save the new refresh token hash to the database
+	newHash := HashToken(newRefresh)
+	err = h.repo.SaveRefreshToken(r.Context(), userID, newHash, refreshExpiration)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to persist session"})
+		return
+	}
+
+	// Return the new tokens to the client
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(models.TokenResponse{
+		AccessToken:  newAccess,
+		RefreshToken: newRefresh,
+	})
+}

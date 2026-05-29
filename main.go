@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"main/auth"
 	"main/database"
 	"net/http"
 	"os"
@@ -18,6 +19,13 @@ func main() {
 		log.Fatalf("Database initialization failed: %v", err)
 	}
 	defer dbPool.Close()
+
+	// Initialize Auth repo and handler
+	authRepo := auth.NewRepository(dbPool)
+	authHandler := auth.NewHandler(authRepo)
+
+	// Routing
+	http.HandleFunc("/register", authHandler.Register)
 
 	// Test route that quaries the database version
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

@@ -9,7 +9,7 @@ Check out the project details [roadmap.sh](https://roadmap.sh/projects/todo-list
 ## TODO
 
 1. User registration to create a new user - Done
-2. Login endpoint to authenticate the user and generate a token
+2. Login endpoint to authenticate the user and generate a token - Done
 3. CRUD operations for managing the task list
 4. User authentication to allow only authorized users to access the task list
 5. Error handling and security measures

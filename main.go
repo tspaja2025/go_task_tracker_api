@@ -6,6 +6,7 @@ import (
 	"log"
 	"main/auth"
 	"main/database"
+	"main/middleware"
 	"net/http"
 	"os"
 )
@@ -28,6 +29,15 @@ func main() {
 	http.HandleFunc("/register", authHandler.Register)
 	http.HandleFunc("/login", authHandler.Login)
 	http.HandleFunc("/refresh", authHandler.Refresh)
+
+	// Protected route
+	http.HandleFunc("/tasks/test", middleware.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+		// Get user ID
+		userID, _ := middleware.GetUserIDFromContext(r.Context())
+
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"message": "Access granted!", "user_id:" %d}`, userID)
+	}))
 
 	// Test route that quaries the database version
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

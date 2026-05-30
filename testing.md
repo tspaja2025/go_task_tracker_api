@@ -143,3 +143,19 @@ Rapid multiple request test
 ```bash
 for i in {1..15}; do curl -i http://localhost:8080/register; done
 ```
+
+11. Run testing
+
+```bash
+go test -v ./...
+```
+
+Expected output:
+```bash
+=== RUN   TestCreateTask_Success
+--- PASS: TestCreateTask_Success (0.01s)
+=== RUN   TestTaskRouter_InvalidIDFormat
+--- PASS: TestTaskRouter_InvalidIDFormat (0.00s)
+PASS
+ok      task-tracker/internal/tasks    0.025s
+```

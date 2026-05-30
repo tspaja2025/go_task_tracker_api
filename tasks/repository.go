@@ -103,3 +103,76 @@ func (r *Repository) Delete(ctx context.Context, id, userID int) error {
 	}
 	return nil
 }
+
+// Retrieve a filtered, sorted and paginated array of tasks for user
+func (r *Repository) List(ctx context.Context, userID int, f models.TaskQueryFilters) ([]models.Task, error) {
+	// Defaults if values are missing
+	if f.Page <= 0 {
+		f.Page = 1
+	}
+	if f.Limit <= 0 || f.Limit > 100 {
+		f.Limit = 10
+	}
+	if f.Order != "ASC" && f.Order != "DESC" {
+		f.Order = "DESC"
+	}
+
+	// Validate sort column to prevent SQL injection
+	allowedSortColumns := map[string]bool{"created_at": true, "due_at": true, "priority": true, "id": true}
+	if !allowedSortColumns[f.SortBy] {
+		f.SortBy = "created_at"
+	}
+
+	// Base query
+	query := `SELECT id, user_id, title, description, status, priority, due_at, created_at, updated_at FROM tasks WWHERE user_id = $1`
+
+	// Track query arguments
+	args := []interface{}{userID}
+	argCount := 1
+
+	// Apply filtering by status
+	if f.Status != "" {
+		argCount++
+		query += fmt.Sprintf(" AND status = $%d", argCount)
+		args = append(args, f.Status)
+	}
+
+	// Apply filtering by Priority
+	if f.Priority != "" {
+		argCount++
+		query += fmt.Sprintf(" AND priority = $%d", argCount)
+		args = append(args, f.Priority)
+	}
+
+	// Apply sorting and ordering
+	query += fmt.Sprintf(" ORDER BY %s %s", f.SortBy, f.Order)
+
+	// Apply pagination
+	offset := (f.Page - 1) * f.Limit
+	argCount++
+	query += fmt.Sprintf(" LIMIT $%d", argCount)
+	args = append(args, f.Limit)
+
+	argCount++
+	query += fmt.Sprintf(" OFFSET $%d", argCount)
+	args = append(args, offset)
+
+	// Execute query
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []models.Task
+	for rows.Next() {
+		var t models.Task
+		err := rows.Scan(&t.ID, &t.UserID, &t.Title, &t.Description, &t.Status, &t.Priority, &t.DueAt, &t.CreatedAt, &t.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, t)
+	}
+
+	return tasks, nil
+}

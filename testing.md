@@ -111,3 +111,24 @@ Delete a task
 ```bash
 curl -X DELETE -H "Authorization: Bearer YOUR_ACCESS_TOKEN" http://localhost:8080/tasks/1
 ```
+
+9. Test query system
+
+```bash
+docker-compose up --build
+```
+
+Get page 1 with a limit of 5 tasks
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" "http://localhost:8080/tasks?page=1&limit=5"
+```
+
+Filter only "pending" tasks, sorted by priority in ascending order
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" "http://localhost:8080/tasks?status=pending&sort_by=priority&order=ASC"
+```
+
+Conbine filtering and pagination criteria
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" "http://localhost:8080/tasks?status=completed&priority=high&page=1&limit=2"
+```

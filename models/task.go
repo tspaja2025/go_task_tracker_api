@@ -32,3 +32,13 @@ type UpdateTaskRequest struct {
 	Priority    *string    `json:"priority" validate:"omitempty,oneof=low medium high"`
 	DueAt       *time.Time `json:"due_at"`
 }
+
+// Hold incoming criteria for pagination, filtering and sorting
+type TaskQueryFilters struct {
+	Page     int    `json:"page"`
+	Limit    int    `json:"limit"`
+	Status   string `json:"status"`
+	Priority string `json:"priority"`
+	SortBy   string `json:"sort_by"` // "created_at", "due_date", "priority"
+	Order    string `json:"order"`   // "ASC" or "DESC"
+}

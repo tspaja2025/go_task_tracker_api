@@ -15,9 +15,9 @@ Check out the project details [roadmap.sh](https://roadmap.sh/projects/todo-list
 5. Error handling and security measures - Done
 6. Database for storing the user and task list - Done
 7. Data validation - Done
-8. pagination, filtering and sorting for the task list
+8. pagination, filtering and sorting for the task list - Done
 9. Unit tests for the API
-10. Rate limiting and throttling for the API
+10. Rate limiting and throttling for the API - Done
 11. Refresh token mechanism for the authentication - Done
 
 ## Features

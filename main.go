@@ -22,6 +22,10 @@ func main() {
 	}
 	defer dbPool.Close()
 
+	// Initialize global ip rate limiter
+	// 5 tokens per second refill, with maximum capacity of 10 tokens
+	limiter := middleware.NewIPRateLimiter(5, 10)
+
 	// Initialize Auth repo and handler
 	authRepo := auth.NewRepository(dbPool)
 	authHandler := auth.NewHandler(authRepo)
@@ -31,12 +35,12 @@ func main() {
 	taskHandler := tasks.NewHandler(taskRepo)
 
 	// Routing
-	http.HandleFunc("/register", authHandler.Register)
-	http.HandleFunc("/login", authHandler.Login)
-	http.HandleFunc("/refresh", authHandler.Refresh)
+	http.HandleFunc("/register", limiter.Limit(authHandler.Register))
+	http.HandleFunc("/login", limiter.Limit(authHandler.Login))
+	http.HandleFunc("/refresh", limiter.Limit(authHandler.Refresh))
 
 	// Protected route
-	http.HandleFunc("/tasks/", middleware.AuthMiddleware(taskHandler.Router))
+	http.HandleFunc("/tasks/", limiter.Limit(middleware.AuthMiddleware(taskHandler.Router)))
 	// http.HandleFunc("/tasks/test", middleware.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
 	// 	// Get user ID
 	// 	userID, _ := middleware.GetUserIDFromContext(r.Context())

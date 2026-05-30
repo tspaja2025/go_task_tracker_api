@@ -132,3 +132,14 @@ Conbine filtering and pagination criteria
 ```bash
 curl -H "Authorization: Bearer YOUR_TOKEN" "http://localhost:8080/tasks?status=completed&priority=high&page=1&limit=2"
 ```
+
+10. Test rate limiter
+
+```bash
+docker-compose up --build
+```
+
+Rapid multiple request test
+```bash
+for i in {1..15}; do curl -i http://localhost:8080/register; done
+```

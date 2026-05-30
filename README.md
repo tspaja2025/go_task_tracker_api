@@ -6,20 +6,6 @@ A simple task tracker API built with Go.
 This project was created as a part of Todo List API beginner project.
 Check out the project details [roadmap.sh](https://roadmap.sh/projects/todo-list-api)
 
-## TODO
-
-1. User registration to create a new user - Done
-2. Login endpoint to authenticate the user and generate a token - Done
-3. CRUD operations for managing the task list - Done
-4. User authentication to allow only authorized users to access the task list - Done
-5. Error handling and security measures - Done
-6. Database for storing the user and task list - Done
-7. Data validation - Done
-8. pagination, filtering and sorting for the task list - Done
-9. Unit tests for the API
-10. Rate limiting and throttling for the API - Done
-11. Refresh token mechanism for the authentication - Done
-
 ## Features
 
 * -

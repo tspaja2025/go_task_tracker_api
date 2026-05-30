@@ -7,6 +7,7 @@ import (
 	"main/auth"
 	"main/database"
 	"main/middleware"
+	"main/tasks"
 	"net/http"
 	"os"
 )
@@ -25,19 +26,24 @@ func main() {
 	authRepo := auth.NewRepository(dbPool)
 	authHandler := auth.NewHandler(authRepo)
 
+	// Initialize task repo and handler
+	taskRepo := tasks.NewRepository(dbPool)
+	taskHandler := tasks.NewHandler(taskRepo)
+
 	// Routing
 	http.HandleFunc("/register", authHandler.Register)
 	http.HandleFunc("/login", authHandler.Login)
 	http.HandleFunc("/refresh", authHandler.Refresh)
 
 	// Protected route
-	http.HandleFunc("/tasks/test", middleware.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		// Get user ID
-		userID, _ := middleware.GetUserIDFromContext(r.Context())
+	http.HandleFunc("/tasks/", middleware.AuthMiddleware(taskHandler.Router))
+	// http.HandleFunc("/tasks/test", middleware.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
+	// 	// Get user ID
+	// 	userID, _ := middleware.GetUserIDFromContext(r.Context())
 
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"message": "Access granted!", "user_id:" %d}`, userID)
-	}))
+	// 	w.Header().Set("Content-Type", "application/json")
+	// 	fmt.Fprintf(w, `{"message": "Access granted!", "user_id:" %d}`, userID)
+	// }))
 
 	// Test route that quaries the database version
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
